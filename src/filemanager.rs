@@ -95,8 +95,8 @@ impl FileManager {
                 } 
             },
             KeyCode::Down  => {            
-
-                if self.fileIndex +1 <self.dirs.len() { 
+                
+                if self.fileIndex +1 < self.dirs.len() { 
                     self.fileIndex += 1;
                 }
 
@@ -132,17 +132,21 @@ impl FileManager {
     
         let mut constraints = vec![];
         let pad = 4; 
-        for i in 1..=self.dirs.len()  {
+        
+        let mut bot = 0; 
+
+        for i in 0..=self.dirs.len()  {
+            if i * pad >= 25 && bot == 0 {
+                bot = i;
+            }
+        
             if i * pad >= 100 {
                 break;
             }
             constraints.push(Constraint::Percentage(5));
         }
 
-        /*f.render_widget(
-            Block::new().style(Style::default().bg(Color::White)),
-            Rect::new(self.cursorX, self.cursorY, 1, 1)
-        );*/
+
          
          
         f.render_widget(
@@ -167,24 +171,41 @@ impl FileManager {
              .constraints(constraints)
              .split(filesInner[1]);
 
-
+    
         
         let mut c:usize = 0;
 
-        for i in 0..self.dirs.len() {
+        
+
+
+        let start = if (self.fileIndex as i32) - (bot as i32) <= 9 {0} else {self.fileIndex - bot};
+
+        for i in start..self.dirs.len() {
             c += 1;
-            if c * pad >= 100 {
+            if c * pad >= 100 || c >= filesBounds.len(){
                 break;
             }
+
+            
+            
             let currDir = self.dirs[i].clone(); 
+   
             if i == self.fileIndex {
-                f.render_widget(Span::styled(currDir, Style::default().bg(Color::Blue).fg(Color::Red)), filesBounds[i]);
+                let p = Paragraph::new(currDir.clone())
+                .style(Style::default().bg(Color::Blue).fg(Color::Red))
+                .alignment(Alignment::Center);
+                f.render_widget(p, filesBounds[c]);
                 continue;
             }
-            if  filesBounds[i].y >  outter.height {
+
+            if  filesBounds[c].y > outter.height {
                 break;
             }
-            f.render_widget(Span::styled(currDir.clone(), Style::default().fg(if !FileManager::isDir(currDir.clone()) {Color::Red} else {Color::Blue})), filesBounds[i]);
+
+            let p = Paragraph::new(currDir.clone())
+                .style(Style::default().fg(if !FileManager::isDir(currDir.clone()) {Color::Red} else {Color::Blue}))
+                .alignment(Alignment::Center);
+            f.render_widget(p, filesBounds[c]);
 
         }
 

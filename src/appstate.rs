@@ -24,8 +24,8 @@ impl AppState{
     }
 
     pub fn focusLeft(&mut self) {
-        if (self.currWindow as i32) - 1 <= 0{
-            let index = (self.windowStates.len() as i32)-1; 
+        if (self.currWindow as i32) - 1 < 0{
+            let index = (self.windowStates.len() as i32) - 1; 
             self.currWindow = if index < 0 {0} else {index as usize}; 
             return;
         }
