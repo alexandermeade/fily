@@ -23,7 +23,12 @@ impl AppState{
         state
     }
 
-    pub fn focusLeft(&mut self) {
+    pub fn focus_left(&mut self) {
+        
+        if self.windowStates.len() <= 0 {
+            return;
+        }
+
         if (self.currWindow as i32) - 1 < 0{
             let index = (self.windowStates.len() as i32) - 1; 
             self.currWindow = if index < 0 {0} else {index as usize}; 
@@ -33,7 +38,12 @@ impl AppState{
         self.currWindow -= 1;
     }
 
-    pub fn focusRight(&mut self) {
+    pub fn focus_right(&mut self) {
+
+        if self.windowStates.len() <= 0 {
+            return;
+        }
+
         if self.currWindow + 1 > self.windowStates.len()-1{
             self.currWindow = 0;
             return;
@@ -43,12 +53,19 @@ impl AppState{
 
     }
 
-    pub fn removeWin(&mut self, index:usize) {
+    pub fn is_using_keyboard(&mut self) -> bool {
+        if self.windowStates.len() <= 0 {
+            return false;
+        }
+        self.windowStates[self.currWindow].is_using_keyboard() 
+    }
 
-        self.windowStates[self.currWindow].handleQuit();
+    pub fn remove_win(&mut self, index:usize) {
+
+        self.windowStates[self.currWindow].handle_quit();
         self.windowStates.remove(index);
 
-        self.focusLeft();
+        self.focus_left();
     }
 
     fn inc(& mut self) {

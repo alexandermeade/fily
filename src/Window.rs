@@ -47,18 +47,25 @@ impl WindowState {
     pub fn from(win:&WindowState) -> WindowState{
         WindowState {windowName:String::from(&win.windowName), elements:win.elements.clone()}
     }
-    pub fn handleQuit(&mut self){
+    pub fn handle_quit(&mut self){
         
     } 
-    pub fn handleInput(&mut self, key:KeyEvent) {        
+    pub fn is_using_keyboard(&mut self) -> bool{
+        return match &self.elements {
+            Element::FileManager(fm) => fm.isSearching,
+            Element::None => false
+        }
+    }
+    pub fn handle_input(&mut self, key:KeyEvent) {        
         match &mut self.elements {
             Element::FileManager(fm) => {
-                fm.handleInput(key);
+                fm.handle_input(key);
             },
   //          Element::TextManager(text) => {},
             Element::None => {}
         }
     }
+    
     
     pub fn render(&self,  f: &mut Frame, appState:&  AppState, outter:Rect, isFocused: bool) { 
         match &self.elements {

@@ -25,16 +25,18 @@ pub struct FileManager{
     pub currDir:String,
     pub dirs:Box<Vec<String>>, 
     pub fileIndex:usize,
+    pub currRegex:String,
+    pub isSearching:bool
 }
 
 
 impl FileManager {
     pub fn new() -> FileManager{
-        let dir = FileManager::getCurrDir();
-        FileManager {currDir:String::from(&dir), dirs:Box::new(FileManager::getCurrDirs(String::from(&dir))), fileIndex: 0}
+        let dir = FileManager::get_curr_dir();
+        FileManager {currDir:String::from(&dir), dirs:Box::new(FileManager::get_curr_dirs(String::from(&dir))), fileIndex: 0, currRegex: String::from(""), isSearching: false}
     }
 
-    pub fn getCurrDir() -> String{
+    pub fn get_curr_dir() -> String{
          String::from(env::current_dir()
             .unwrap()
             .as_path()
@@ -43,7 +45,7 @@ impl FileManager {
         )
     }
 
-    pub fn isDir(path:String) -> bool {
+    pub fn is_dir(path:String) -> bool {
         metadata(path).unwrap().is_dir()
     }
 
@@ -65,7 +67,7 @@ impl FileManager {
     }
 
 
-    pub fn getCurrDirs(dir:String) -> Vec<String> {
+    pub fn get_curr_dirs(dir:String) -> Vec<String> {
 
         let mut dirs:Vec<String> = Vec::new();
 
@@ -87,7 +89,7 @@ impl FileManager {
     }   
 
 
-    pub fn handleInput(&mut self, key:KeyEvent) {
+    pub fn handle_input(&mut self, key:KeyEvent) {
         match key.code {
             KeyCode::Up  => {
                 if (self.fileIndex as i32) - 1 >= 0 {
@@ -106,9 +108,9 @@ impl FileManager {
                 let currDir = FileManager::back(String::from(&self.currDir));  
                 self.currDir = currDir;
                 self.fileIndex = 0;
-                if FileManager::isDir(self.currDir.clone()){
+                if FileManager::is_dir(self.currDir.clone()){
 
-                    self.dirs = Box::new(FileManager::getCurrDirs(String::from(&self.currDir))); 
+                    self.dirs = Box::new(FileManager::get_curr_dirs(String::from(&self.currDir))); 
                 }
 
             },
@@ -117,9 +119,9 @@ impl FileManager {
 
                 self.currDir = String::from(&self.dirs[self.fileIndex]); 
                 
-                if(FileManager::isDir(self.currDir.clone())){
+                if(FileManager::is_dir(self.currDir.clone())){
 
-                    self.dirs = Box::new(FileManager::getCurrDirs(String::from(&self.currDir))); 
+                    self.dirs = Box::new(FileManager::get_curr_dirs(String::from(&self.currDir))); 
                 }
                 self.fileIndex = 0;
 
@@ -203,7 +205,7 @@ impl FileManager {
             }
 
             let p = Paragraph::new(currDir.clone())
-                .style(Style::default().fg(if !FileManager::isDir(currDir.clone()) {Color::Red} else {Color::Blue}))
+                .style(Style::default().fg(if !FileManager::is_dir(currDir.clone()) {Color::Red} else {Color::Blue}))
                 .alignment(Alignment::Center);
             f.render_widget(p, filesBounds[c]);
 
