@@ -119,7 +119,7 @@ impl FileManager {
 
                 self.currDir = String::from(&self.dirs[self.fileIndex]); 
                 
-                if(FileManager::is_dir(self.currDir.clone())){
+                if FileManager::is_dir(self.currDir.clone()){
 
                     self.dirs = Box::new(FileManager::get_curr_dirs(String::from(&self.currDir))); 
                 }
@@ -130,7 +130,7 @@ impl FileManager {
         }
     }
 
-    pub fn render(&self,  f: &mut Frame, appState:&  AppState, outter:Rect, isFocused: bool) {
+    pub fn render(&self,  f: &mut Frame, _appState:&AppState, outter:Rect, isFocused: bool) {
     
         let mut constraints = vec![];
         let pad = 4; 
@@ -176,9 +176,6 @@ impl FileManager {
     
         
         let mut c:usize = 0;
-
-        
-
 
         let start = if (self.fileIndex as i32) - (bot as i32) <= 9 {0} else {self.fileIndex - bot};
 

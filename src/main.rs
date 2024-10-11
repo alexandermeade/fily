@@ -7,10 +7,10 @@ use crossterm::{
 use ratatui::{backend::CrosstermBackend, Frame, Terminal};
 use std::io::{self};
 
+mod window;
 mod tui;
 mod appstate;
 mod ui;
-mod window;
 mod filemanager;
 
 fn main() -> io::Result<()> {
@@ -88,7 +88,6 @@ fn run_app(terminal:&mut Terminal<CrosstermBackend<io::Stdout>>, state:& mut app
         }
     }
     
-    Ok(())
 
 }
 
