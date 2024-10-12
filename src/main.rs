@@ -7,6 +7,8 @@ use crossterm::{
 use ratatui::{backend::CrosstermBackend, Frame, Terminal};
 use std::io::{self};
 
+//changed small thing
+
 mod window;
 mod tui;
 mod appstate;
