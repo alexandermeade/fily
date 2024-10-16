@@ -26,7 +26,7 @@ pub fn ui_render(f: &mut Frame, appState:&mut appstate::AppState_t) {
         ]).split(f.size());
 
     let mut innerConstraints = vec![];
-    if appState.windowStates.len() <= 0 {
+    if appState.windowStates().len() <= 0 {
         let currDirLayout = Layout::default()
             .direction(Direction::Vertical)
             .constraints(vec![Constraint::Percentage(25),Constraint::Percentage(50), Constraint::Percentage(50)])
@@ -38,12 +38,12 @@ pub fn ui_render(f: &mut Frame, appState:&mut appstate::AppState_t) {
         return;
     }
 
-    if appState.windowStates.len() <= 0 {
+    if appState.windowStates().len() <= 0 {
         return;
     }
 
-    for i in 0..appState.windowStates.len() {
-        innerConstraints.push(Constraint::Percentage(((100/appState.windowStates.len())).try_into().unwrap()));
+    for i in 0..appState.windowStates().len() {
+        innerConstraints.push(Constraint::Percentage(((100/appState.windowStates().len())).try_into().unwrap()));
     }
 
     let innerLayout = Layout::default() 
@@ -60,19 +60,23 @@ pub fn ui_render(f: &mut Frame, appState:&mut appstate::AppState_t) {
 
 
 
-    let windowState = &appState.windowStates[appState.currWindow as usize];
-    f.render_widget(Span::styled(format!("{}, window count {}", windowState.windowName, appState.windowStates.len()), Style::default().bg(Color::Blue).fg(Color::Black)), outterLayout[2]); 
+    let windowState = &appState.windowStates()[appState.curr_win_index() as usize];
+    
+    f.render_widget(Span::styled(format!("{}, window count {}", windowState.name(), appState.windowStates().len()), Style::default().bg(Color::Blue).fg(Color::Black)), outterLayout[2]); 
     
 
 
-    for i in 0..appState.windowStates.len(){
+    for i in 0..appState.windowStates().len(){
         let filesOutter = Layout::default() 
              .direction(Direction::Horizontal)
              .constraints(vec![
                 Constraint::Percentage(2),
                 Constraint::Percentage(98)
              ]).split(innerLayout[i]);
-        appState.windowStates[i].render(f, &appState, filesOutter[1], i == appState.currWindow as usize); 
+        appState.windowStates()[i].render(f, &appState, filesOutter[1], i == appState.curr_win_index() as usize); 
     }
+
+     
+
 }
 

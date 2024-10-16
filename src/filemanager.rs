@@ -22,18 +22,23 @@ use ratatui::{
 
 #[derive(Clone)]
 pub struct FileManager{
-    pub currDir:String,
-    pub dirs:Box<Vec<String>>, 
-    pub fileIndex:usize,
-    pub currRegex:String,
-    pub isSearching:bool
+    currDir:String,
+    dirs:Box<Vec<String>>, 
+    fileIndex:usize,
+    currRegex:String,
+    isSearching:bool
 }
 
 
 impl FileManager {
+    
     pub fn new() -> FileManager{
         let dir = FileManager::get_curr_dir();
         FileManager {currDir:String::from(&dir), dirs:Box::new(FileManager::get_curr_dirs(String::from(&dir))), fileIndex: 0, currRegex: String::from(""), isSearching: false}
+    }
+
+    pub fn searching(&self) -> bool {
+        return self.isSearching;
     }
 
     pub fn get_curr_dir() -> String{
@@ -51,11 +56,12 @@ impl FileManager {
 
 
     pub fn back(path:String) -> String{
+        let key = '/';
         let mut newPath = path.clone();
         newPath.pop();
-        let pieces = newPath.split('\\');
+        let pieces = newPath.split(key);
     
-        let mut piecesJoin:Vec<String> = pieces.map(|p| format!("{}\\", p)).collect();    
+        let mut piecesJoin:Vec<String> = pieces.map(|p| format!("{}{}", p, key)).collect();    
     
         if piecesJoin.len() < 2{
             return path;
@@ -108,8 +114,8 @@ impl FileManager {
                 let currDir = FileManager::back(String::from(&self.currDir));  
                 self.currDir = currDir;
                 self.fileIndex = 0;
+                
                 if FileManager::is_dir(self.currDir.clone()){
-
                     self.dirs = Box::new(FileManager::get_curr_dirs(String::from(&self.currDir))); 
                 }
 
@@ -126,7 +132,22 @@ impl FileManager {
                 self.fileIndex = 0;
 
             }
-            _ => {}
+            KeyCode::Char('s') => {
+                self.isSearching = !self.isSearching;
+                
+            }
+            key => {
+                let c:String = match key {
+                    KeyCode::Char(key) => {
+                        String::from(key)
+                    },
+                    _ => {String::from("")},
+                };
+                if self.isSearching {
+                    self.currRegex.push_str(&c);
+                    return;
+                }
+            }
         }
     }
 
@@ -155,7 +176,8 @@ impl FileManager {
         Block::new()
             .border_type(BorderType::Rounded)    
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(if isFocused {Color::Blue} else {Color::White})),
+            .border_style(Style::default().fg(if isFocused {Color::Blue} else {Color::White}))
+            .title(format!("{}", self.currDir)),
         outter);
         
         
@@ -185,8 +207,6 @@ impl FileManager {
                 break;
             }
 
-            
-            
             let currDir = self.dirs[i].clone(); 
    
             if i == self.fileIndex {

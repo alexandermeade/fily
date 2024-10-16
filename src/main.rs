@@ -49,15 +49,15 @@ fn run_app(terminal:&mut Terminal<CrosstermBackend<io::Stdout>>, state:& mut app
                         let file_manager = filemanager::FileManager::new();  // Create a FileManager
                         let element = window::Element::FileManager(Box::new(file_manager));  // Wrap it in an Elemen
                         let win = window::WindowState::new(String::from("files"), element);
-                        state.windowStates.push(Box::new(win));
+                        state.push_win(win);
                     },
                     KeyCode::Char('c') if !state.is_using_keyboard() => {
-                        let currWin = &state.windowStates[state.currWindow];
+                        let currWin = &state.windowStates()[state.curr_win_index()];
                         
-                        state.windowStates.push(Box::new(window::WindowState::from(&currWin)));
+                        state.push_win(window::WindowState::from(&currWin));
                     },
                     KeyCode::Char('q') if !state.is_using_keyboard() => {
-                        if state.windowStates.len() <= 0 {
+                        if state.windowStates().len() <= 0 {
                             disable_raw_mode()?;
                             execute!(
                                 terminal.backend_mut(),
@@ -68,13 +68,14 @@ fn run_app(terminal:&mut Terminal<CrosstermBackend<io::Stdout>>, state:& mut app
 
                         }
                          
-                        state.remove_win(state.currWindow);
+                        state.remove_win(state.curr_win_index());
 
                     },
-                    _ => if state.windowStates.len() > 0 {
-                        let windows = &mut state.windowStates; 
-                        let index = state.currWindow as usize;
-                        windows[index].handle_input(key);
+                    _ => if state.windowStates().len() > 0 {
+                        match state.curr_win() {
+                            Some(win) => win.handle_input(key),
+                            None => {}
+                        }
                                                               
                     }
     /*                KeyCode::Left => state.move_horizontal(-1),

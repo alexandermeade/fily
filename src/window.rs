@@ -35,24 +35,39 @@ impl Clone for Element {
 }
 
 pub struct WindowState {
-    pub windowName: String,
-    pub elements:Element,
+    windowName: String,
+    elements:Element,
+    pullingKeyboard:bool,
 }
 
 
 impl WindowState {
+    pub fn name(&self) -> String{
+        return self.windowName.clone();
+    }
+
+    pub fn elements(&self) -> &Element {
+        return &self.elements;
+    }
+
+    pub fn using_keyboard(&self) -> bool {
+        return self.pullingKeyboard;
+    }
+
     pub fn new(name:String, elements: Element) -> WindowState{
-        WindowState {windowName:name, elements:elements}
+        WindowState {windowName:name, elements:elements, pullingKeyboard:false}
     }
+    
     pub fn from(win:&WindowState) -> WindowState{
-        WindowState {windowName:String::from(&win.windowName), elements:win.elements.clone()}
+        WindowState {windowName:String::from(&win.windowName), elements:win.elements.clone(), pullingKeyboard:false}
     }
+
     pub fn handle_quit(&mut self){
         
     } 
     pub fn is_using_keyboard(&mut self) -> bool{
         return match &self.elements {
-            Element::FileManager(fm) => fm.isSearching,
+            Element::FileManager(fm) => fm.searching(),
             Element::None => false
         }
     }

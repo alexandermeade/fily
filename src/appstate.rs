@@ -6,11 +6,12 @@ use std::io::{Error, ErrorKind};
 use crate::window;
 
 pub type AppState_t  = Box<AppState>;
+pub type WinStates = Vec<Box<window::WindowState>>; 
 
 pub struct AppState{
-    pub counter:i32,
-    pub currWindow: usize,
-    pub windowStates: Vec<Box<window::WindowState>>,
+    counter:i32,
+    currWindow: usize,
+    windowStates: WinStates,
 }
 
 impl AppState{
@@ -22,6 +23,23 @@ impl AppState{
             windowStates:Vec::new()
         };
         state
+    }
+    pub fn curr_win_index(&self) -> usize {
+        return self.currWindow;
+    }
+    pub fn windowStates(&self) -> &WinStates{
+        return &self.windowStates;
+    }
+
+    pub fn push_win(&mut self, win:window::WindowState) {
+        self.windowStates.push(Box::new(win));
+    }
+
+    pub fn curr_win(&mut self) -> Option<&mut Box<window::WindowState>> {
+        if self.currWindow >= 0 && self.currWindow < self.windowStates.len() {
+            return Some(&mut self.windowStates[self.currWindow]);
+        }        
+        return None;
     }
 
     pub fn focus_left(&mut self) {
