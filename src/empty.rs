@@ -1,10 +1,10 @@
+use crate::filyregex;
 use std::path::PathBuf;
 use std::env;
 use std::io; 
 use std::fs;
 use std::fs::metadata;
 use crate::appstate::AppState;
-use crate::filyregex;
 use crate::filyregex::Command;
 
 use crossterm::{
@@ -23,26 +23,23 @@ use ratatui::{
 };
 
 #[derive(Clone)]
-pub struct FileManager{
-    currDir:String,
-    dirs:Box<Vec<String>>, 
-    fileIndex:usize,
-    currRegex:String,
-    isSearching:bool
+pub struct Empty {
+    contents:String,
+    lineIndex:usize,
+    isSearching:bool,
+    currRegex: String
 }
 
 
-impl FileManager {
+impl Empty {
     
-    pub fn new() -> FileManager{
-        let dir = FileManager::get_curr_dir();
+    pub fn new(contents:String) -> Empty {
 
-        FileManager {
-            currDir:String::from(&dir), 
-            dirs:Box::new(FileManager::get_curr_dirs(String::from(&dir))), 
-            fileIndex: 0, 
-            currRegex: String::from(""), 
-            isSearching: false
+        Empty {
+            contents,
+            lineIndex:0,
+            isSearching: false,
+            currRegex: String::from("")
         }
 
     }
@@ -60,101 +57,41 @@ impl FileManager {
         )
     }
 
-    pub fn is_dir(path:String) -> bool {
-        metadata(path).unwrap().is_dir()
-    }
 
     pub fn pulling_info(&self) -> String {
         self.currRegex.clone()
     }
-    pub fn back(path:String) -> String{
-        let key = '/';
-        let mut newPath = path.clone();
-        newPath.pop();
-        let pieces = newPath.split(key);
-    
-        let mut piecesJoin:Vec<String> = pieces.map(|p| format!("{}{}", p, key)).collect();    
-    
-        if piecesJoin.len() < 2{
-            return path;
-        }
-    
-        piecesJoin.remove(piecesJoin.len()-1);
-        return piecesJoin.into_iter().collect(); 
-    }
-
-
-    pub fn get_curr_dirs(dir:String) -> Vec<String> {
-
-        let mut dirs:Vec<String> = Vec::new();
-
-
-        match fs::read_dir(dir) {
-            Ok(entries) => {
-                for entry in entries {
-                    match entry {
-                        Ok(entry) => dirs.push(String::from(entry.path().to_str().unwrap())),
-                        Err(e) =>eprintln!("Error: {}", e),
-                    }
-
-                }
-            }
-            Err(e) => eprintln!("Error: {}", e),
-        }
-        dirs
-
-    }   
 
 
     pub fn handle_input(&mut self, key:KeyEvent) -> Option<Vec<Command>>{
         match key.code {
             KeyCode::Up  => {
-                if (self.fileIndex as i32) - 1 >= 0 {
-                    self.fileIndex -= 1;
+                if (self.lineIndex as i32) - 1 >= 0 {
+                    self.lineIndex -= 1;
                 } 
             },
             KeyCode::Down  => {            
                 
-                if self.fileIndex +1 < self.dirs.len() { 
-                    self.fileIndex += 1;
+                if self.lineIndex +1 < self.contents.split("\n").collect::<Vec<_>>().len() { 
+                    self.lineIndex += 1;
                 }
 
             },
             KeyCode::Backspace if !self.isSearching => {
-                
-                let currDir = FileManager::back(String::from(&self.currDir));  
-                self.currDir = currDir;
-                self.fileIndex = 0;
-                
-                if FileManager::is_dir(self.currDir.clone()){
-                    self.dirs = Box::new(FileManager::get_curr_dirs(String::from(&self.currDir))); 
-                }
 
             },
             KeyCode::Backspace if self.isSearching => {
                 self.currRegex.pop();
             },
 
-            KeyCode::Enter if self.fileIndex < self.dirs.len() && !self.isSearching => {
-                
-
-                self.currDir = String::from(&self.dirs[self.fileIndex]); 
-                
-                if FileManager::is_dir(self.currDir.clone()){
-
-                    self.dirs = Box::new(FileManager::get_curr_dirs(String::from(&self.currDir))); 
-                }
-                self.fileIndex = 0;
-
-            }
             KeyCode::Enter if self.isSearching => {
                 let res = self.execute_fily_regex();
                 self.isSearching = false;
                 self.currRegex = String::from("");
                 return Some(res);
-            }
+            }   
 
-            KeyCode::Char('s') if !self.isSearching => {
+            KeyCode::Char('s') | KeyCode::Char(':') if !self.isSearching => {
                 self.isSearching = true;
                 
             }
@@ -176,20 +113,21 @@ impl FileManager {
         }
         None
     }
-
+    
     fn execute_fily_regex(&self) -> Vec<filyregex::Command> {
-        filyregex::execute_fily_regex(Some(self.currDir.clone()), self.currRegex.clone())
-
+        filyregex::execute_fily_regex(None, self.currRegex.clone())
     }
 
     pub fn render(&self,  f: &mut Frame, _appState:&AppState, outter:Rect, isFocused: bool) {
     
+        let contents = self.contents.split("\n").into_iter().collect::<Vec<_>>();
+        
         let mut constraints = vec![];
         let pad = 4; 
         
         let mut bot = 0; 
 
-        for i in 0..=self.dirs.len()  {
+        for i in 0..=contents.len()  {
             if i * pad >= 25 && bot == 0 {
                 bot = i;
             }
@@ -208,7 +146,7 @@ impl FileManager {
             .border_type(BorderType::Rounded)    
             .borders(Borders::ALL)
             .border_style(Style::default().fg(if isFocused {Color::Blue} else {Color::White}))
-            .title(format!("{}", self.currDir)),
+            .title("window view"),
         outter);
         
         
@@ -226,34 +164,25 @@ impl FileManager {
              .constraints(constraints)
              .split(filesInner[1]);
 
-    
-        
+
         let mut c:usize = 0;
 
-        let start = if (self.fileIndex as i32) - (bot as i32) <= 9 {0} else {self.fileIndex - bot};
+        let start = if (self.lineIndex as i32) - (bot as i32) <= 9 {0} else {self.lineIndex - bot};
 
-        for i in start..self.dirs.len() {
+        for i in start..contents.len() {
             c += 1;
             if c * pad >= 100 || c >= filesBounds.len(){
                 break;
             }
 
-            let currDir = self.dirs[i].clone(); 
-   
-            if i == self.fileIndex {
-                let p = Paragraph::new(currDir.clone())
-                .style(Style::default().bg(Color::Blue).fg(Color::Red))
-                .alignment(Alignment::Center);
-                f.render_widget(p, filesBounds[c]);
-                continue;
-            }
+            let currLine = contents[i].clone(); 
 
             if  filesBounds[c].y > outter.height {
                 break;
             }
 
-            let p = Paragraph::new(currDir.clone())
-                .style(Style::default().fg(if !FileManager::is_dir(currDir.clone()) {Color::Red} else {Color::Blue}))
+            let p = Paragraph::new(contents[i].clone())
+                .style(Style::default().fg(Color::White))
                 .alignment(Alignment::Center);
             f.render_widget(p, filesBounds[c]);
 
