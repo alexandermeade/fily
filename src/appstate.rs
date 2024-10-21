@@ -35,6 +35,8 @@ impl AppState {
     }
 
     pub fn evaluate_commands(&mut self, commands:Vec<Command>) {
+
+        //top level commands
         for command in commands {
             match command {
                 Command::Win(contents) => {

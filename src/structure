@@ -1,0 +1,11 @@
+
+
+
+---------------------Fily GUI--------------------------
+|                                                     |
+|---------Top Level Commands [:win, :q, :exit] --------
+|                Fm, Empty, Text editor
+|----sub level Commands [:cl :cr ](cursor left, cursor right)---- 
+|
+
+

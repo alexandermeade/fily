@@ -102,10 +102,8 @@ impl FileManager {
             Err(e) => eprintln!("Error: {}", e),
         }
         dirs
-
-    }   
-
-
+    }
+    
     pub fn handle_input(&mut self, key:KeyEvent) -> Option<Vec<Command>>{
         match key.code {
             KeyCode::Up  => {
@@ -113,6 +111,7 @@ impl FileManager {
                     self.fileIndex -= 1;
                 } 
             },
+
             KeyCode::Down  => {            
                 
                 if self.fileIndex +1 < self.dirs.len() { 

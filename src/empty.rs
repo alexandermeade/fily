@@ -33,8 +33,7 @@ pub struct Empty {
 
 impl Empty {
     
-    pub fn new(contents:String) -> Empty {
-
+    pub fn new(contents:String) -> Empty { 
         Empty {
             contents,
             lineIndex:0,
@@ -63,7 +62,8 @@ impl Empty {
     }
 
 
-    pub fn handle_input(&mut self, key:KeyEvent) -> Option<Vec<Command>>{
+    pub fn handle_input(&mut self, key:KeyEvent) -> Option<Vec<Command>> {
+        //sub commands
         match key.code {
             KeyCode::Up  => {
                 if (self.lineIndex as i32) - 1 >= 0 {
@@ -91,7 +91,13 @@ impl Empty {
                 return Some(res);
             }   
 
-            KeyCode::Char('s') | KeyCode::Char(':') if !self.isSearching => {
+            KeyCode::Char('s') if !self.isSearching => {
+                self.isSearching = true;
+                
+            }
+            
+            KeyCode::Char(':') if !self.isSearching => {
+                self.currRegex.push_str(":");
                 self.isSearching = true;
                 
             }
