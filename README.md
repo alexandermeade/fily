@@ -4,7 +4,5 @@
   <h1>
     What's FILY?
   </h1>
+  Fily is an open source text based File Browser!
 </div>
-
-
-Fily is an open source text based File Browser!
