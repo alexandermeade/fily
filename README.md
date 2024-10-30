@@ -8,5 +8,5 @@
 
 <div style="display: flex; align-items: center;">
     <img src="https://github.com/user-attachments/assets/da0b5fda-3b44-4bae-b71e-4b2e55220559" alt="Icon" style="width: 30px; height: 30px; margin-right: 10px;">
-    <span style="font-size: 40px;">Your Project Title</span>
+    <span style="font-size: 400px;">Your Project Title</span>
 </div>
